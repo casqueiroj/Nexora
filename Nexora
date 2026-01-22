@@ -1,0 +1,228 @@
+nexora/
+├─ pages/
+│  ├─ index.js
+│  ├─ create.js
+│  ├─ listen.js
+│  └─ profile/[id].js
+├─ components/
+│  ├─ Player.js
+│  ├─ Visualizer.js
+│  ├─ Navbar.js
+│  └─ Footer.js
+├─ public/
+│  └─ sounds/   (coloca aqui alguns loops de DNB, Dubstep, Techno)
+├─ lib/
+│  └─ supabaseClient.js
+├─ styles/
+│  └─ globals.css
+├─ package.json
+└─ next.config.js
+nexora/
+├─ pages/
+│  ├─ index.js
+│  ├─ create.js
+│  ├─ listen.js
+│  └─ profile/[id].js
+├─ components/
+│  ├─ Player.js
+│  ├─ Visualizer.js
+│  ├─ Navbar.js
+│  └─ Footer.js
+├─ public/
+│  └─ sounds/   (coloca loops de DNB, Dubstep, Techno, etc.)
+├─ lib/
+│  └─ supabaseClient.js
+├─ styles/
+│  └─ globals.css
+├─ package.json
+└─ next.config.js
+import { useState } from "react";
+import Player from "../components/Player";
+
+export default function Home() {
+  const [mode, setMode] = useState("fluir");
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#050505", color: "white", fontFamily: "sans-serif" }}>
+      <h1 style={{ textAlign: "center", paddingTop: 20 }}>NEXORA</h1>
+      <p style={{ textAlign: "center", opacity: 0.7 }}>Um estado de liberdade criativa</p>
+
+      <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 20 }}>
+        <button onClick={() => setMode("fluir")}>Fluir</button>
+        <button onClick={() => setMode("criar")}>Criar</button>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 30 }}>
+        <Player mode={mode} />
+      </div>
+
+      <footer style={{ textAlign: "center", padding: 20, opacity: 0.4 }}>
+        © Nexora – Arte • Comunidade • Liberdade
+      </footer>
+    </div>
+  );
+}
+import { useRef, useState, useEffect } from "react";
+import Visualizer from "./Visualizer";
+
+export default function Player({ mode }) {
+  const audioRef = useRef(null);
+  const [playing, setPlaying] = useState(false);
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    playing ? audioRef.current.pause() : audioRef.current.play();
+    setPlaying(!playing);
+  };
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <audio ref={audioRef} src="/sounds/dnb-loop.mp3" loop />
+      <button onClick={togglePlay}>{playing ? "Parar" : "Tocar"}</button>
+
+      {mode === "criar" && <Visualizer audioRef={audioRef} />}
+    </div>
+  );
+}
+import { useRef, useEffect } from "react";
+
+export default function Visualizer({ audioRef }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let animationId;
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const t = Date.now() * 0.002;
+      for (let i = 0; i < 120; i++) {
+        ctx.fillStyle = `hsl(${(t * 50 + i * 4) % 360}, 80%, 60%)`;
+        ctx.beginPath();
+        ctx.arc(
+          Math.sin(t + i) * 200 + canvas.width / 2,
+          Math.cos(t + i * 0.5) * 200 + canvas.height / 2,
+          Math.random() * 4,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+      }
+      animationId = requestAnimationFrame(render);
+    };
+
+    render();
+    return () => cancelAnimationFrame(animationId);
+  }, []);
+
+  return <canvas ref={canvasRef} width={800} height={500} style={{ display: "block", margin: "40px auto", borderRadius: 12 }} />;
+}
+import Player from "../components/Player";
+
+export default function Create() {
+  return (
+    <div style={{ minHeight: "100vh", background: "#050505", color: "white", fontFamily: "sans-serif", textAlign: "center", paddingTop: 20 }}>
+      <h1>Modo Criar</h1>
+      <p>Experimenta sons, cria vídeos únicos e mergulha na tua liberdade criativa.</p>
+      <Player mode="criar" />
+    </div>
+  );
+}
+import Player from "../components/Player";
+
+export default function Listen() {
+  return (
+    <div style={{ minHeight: "100vh", background: "#050505", color: "white", fontFamily: "sans-serif", textAlign: "center", paddingTop: 20 }}>
+      <h1>Modo Fluir</h1>
+      <p>Ouve música, relaxa e entra no teu estado de liberdade criativa.</p>
+      <Player mode="fluir" />
+    </div>
+  );
+}
+
+import { useRouter } from "next/router";
+
+export default function Profile() {
+  const router = useRouter();
+  const { id } = router.query;
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#050505", color: "white", fontFamily: "sans-serif", textAlign: "center", paddingTop: 20 }}>
+      <h1>Perfil de {id}</h1>
+      <p>Aqui poderás ver as criações do artista ou ouvinte.</p>
+    </div>
+  );
+}
+
+import Link from "next/link";
+
+export default function Navbar() {
+  return (
+    <nav style={{ display: "flex", justifyContent: "center", gap: 20, padding: 20, background: "#111111" }}>
+      <Link href="/">Home</Link>
+      <Link href="/listen">Fluir</Link>
+      <Link href="/create">Criar</Link>
+    </nav>
+  );
+}
+export default function Footer() {
+  return (
+    <footer style={{ textAlign: "center", padding: 20, opacity: 0.5, background: "#111111", color: "white" }}>
+      © Nexora – Arte • Comunidade • Liberdade
+    </footer>
+  );
+}
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = "https://COLOCA_AQUI_TUA_URL_DO_SUPABASE";
+const supabaseKey = "COLOCA_AQUI_TUA_CHAVE_PUBLICA";
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #050505;
+  color: white;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background-color: #1db954;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: scale(1.05);
+  background-color: #1ed760;
+}
+{
+  "name": "nexora",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.8.0",
+    "next": "13.6.10",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  }
+}
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  swcMinify: true
+};
+
+module.exports = nextConfig;
+
+
